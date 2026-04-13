@@ -22,11 +22,11 @@ flowchart TD
     A([Full Document]) --> B["Main LM\nDecides strategy"]
     B --> C[Writes Python code]
     C --> D["Deno WASM REPL\nExecutes code"]
-    D --> E{Result useful?}
-    E -- "Needs semantic\ninterpretation" --> F["Sub-LM\nExtracts value from snippet"]
-    F --> B
-    E -- "Not found /\nrefine search" --> B
-    E -- All fields found --> G[SUBMIT or Extract fallback]
+    D -- "code calls llm_query(snippet)" --> F["Sub-LM gpt-4o-mini\nReads snippet, returns value"]
+    F -- "return value back\ninto REPL as Python string" --> D
+    D -- "Full REPL output\n(incl. any llm_query results)" --> B
+    B -- "Not done — refine search" --> C
+    B -- "All fields found" --> G[SUBMIT or Extract fallback]
     G --> H([Structured JSON Output])
 ```
 
@@ -213,9 +213,10 @@ Using a cheaper model for sub-LM (e.g., `gpt-4o-mini`) significantly reduces cos
 ```mermaid
 flowchart LR
     doc([Document]) --> main["Main LM\ngpt-4o\nStrategy + code"]
-    main -->|"Python code"| repl[Deno REPL]
-    repl -->|"text snippet"| sub["Sub-LM\ngpt-4o-mini\nSemantic extraction"]
-    sub -->|"extracted value"| main
+    main -->|"Python code"| repl["Deno REPL\nExecutes code"]
+    repl -->|"calls llm_query(snippet)\nfrom inside Python code"| sub["Sub-LM\ngpt-4o-mini\nReads snippet"]
+    sub -->|"return value\n(plain string)"| repl
+    repl -->|"Full REPL output\nback to Main LM"| main
     main -->|"all fields resolved"| out([JSON Output])
 ```
 
