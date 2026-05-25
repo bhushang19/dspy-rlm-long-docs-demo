@@ -19,7 +19,14 @@ def build_windows_interpreter() -> PythonInterpreter:
     """
     _tmp = PythonInterpreter.__new__(PythonInterpreter)
     runner_js = _tmp._get_runner_path()
-    deno_dir = _tmp._get_deno_dir()
+    
+    # Try to get deno_dir, but catch any errors on Windows
+    deno_dir = None
+    try:
+        deno_dir = _tmp._get_deno_dir()
+    except Exception:
+        # _get_deno_dir() may fail on Windows, so we'll provide fallback paths
+        pass
 
     allowed_read = [runner_js]
     if deno_dir:

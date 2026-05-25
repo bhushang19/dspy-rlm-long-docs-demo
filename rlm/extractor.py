@@ -29,8 +29,8 @@ def extract_fields(document: str, logger: logging.Logger) -> dspy.Prediction:
         interpreter=interpreter,
         tools=[],
         sub_lm=sub_lm,
-        max_iterations=20,
-        max_llm_calls=50,
+        max_iterations=20, # Budget cap on REPL rounds: each iteration is one Main LM call that writes and executes Python code.
+        max_llm_calls=50, # Budget cap on sub-LM (llm_query) calls made from inside the REPL code. Each call reads one snippet semantically.
         verbose=True,
     )
 
